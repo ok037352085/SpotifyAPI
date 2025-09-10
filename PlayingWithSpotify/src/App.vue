@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue"
 import { generateCodeVerifier, generateCodeChallenge } from "./utils/pcke.js"
 
 const clientId = "f53ab351c2f84d3fb31dd98a408ce5e2"
-const redirectUri = "https://ok037352085.github.io/SpotifyAPI/callback"
+const redirectUri = "https://ok037352085.github.io/SpotifyAPI/"
 const scopes = [
   "streaming",
   "user-read-email",
@@ -26,44 +26,34 @@ const loginWithSpotify = async () => {
 
   localStorage.setItem("code_verifier", verifier)
 
-  const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
-    redirectUri
-  )}&scope=${encodeURIComponent(
-    scopes
-  )}&code_challenge_method=S256&code_challenge=${challenge}`
+const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(
+  redirectUri
+)}&scope=${encodeURIComponent(scopes)}`;
 
   window.location.href = url
 }
 
-/** Step 2: Spotify redirect 回來 -> 交換 token */
-const handleCallback = async () => {
-  const params = new URLSearchParams(window.location.search)
-  const code = params.get("code")
-  if (!code) return
+/** Step 2: Spotify redirect 回來 -> 解析 token */
+const handleCallback = () => {
+  // 解析 URL hash 取得 access_token
+  const hash = window.location.hash.substring(1).split("&").reduce((acc, item) => {
+    const [key, value] = item.split("=");
+    acc[key] = value;
+    return acc;
+  }, {});
 
-  const verifier = localStorage.getItem("code_verifier")
+  if (hash.access_token) {
+    accessToken.value = hash.access_token;
+    console.log("Spotify token:", accessToken.value);
 
-  const body = new URLSearchParams({
-    client_id: clientId,
-    grant_type: "authorization_code",
-    code,
-    redirect_uri: redirectUri,
-    code_verifier: verifier
-  })
+    // 清掉 URL hash
+    window.location.hash = "";
 
-  const res = await fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body
-  })
+    // 初始化 Spotify Web Playback SDK
+    initPlayer();
+  }
+};
 
-  const data = await res.json()
-  accessToken.value = data.access_token
-  console.log("Spotify token:", data)
-
-  window.history.pushState({}, null, "/") // 清掉 ?code=...
-  initPlayer()
-}
 
 /** Step 3: 初始化 Spotify Web Playback SDK */
 const initPlayer = () => {
