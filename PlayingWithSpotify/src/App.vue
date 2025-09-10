@@ -19,10 +19,11 @@ const player = ref(null)
 const deviceId = ref(null)
 
 /** Step 1: Spotify 登入 */
-const loginWithSpotify = () => {
+const loginWithSpotify = async() => {
   const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(
     redirectUri
   )}&scope=${encodeURIComponent(scopes)}`
+
   window.location.href = url
 }
 
