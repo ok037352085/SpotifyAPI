@@ -18,16 +18,16 @@ const results = ref([])
 const player = ref(null)
 const deviceId = ref(null)
 
-/** Step 1: Spotify 登入 */
-const loginWithSpotify = async() => {
-  const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(
-    redirectUri
-  )}&scope=${encodeURIComponent(scopes)}`
-
+/** Step 1: 登入 Spotify */
+const loginWithSpotify = () => {
+  const url = `https://accounts.spotify.com/authorize?client_id=${clientId}` +
+              `&response_type=token` +
+              `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+              `&scope=${encodeURIComponent(scopes)}`
   window.location.href = url
 }
 
-/** Step 2: 解析 hash token */
+/** Step 2: 解析回傳 token */
 const handleCallback = () => {
   const hash = window.location.hash.substring(1).split("&").reduce((acc, item) => {
     const [key, value] = item.split("=")
@@ -37,23 +37,14 @@ const handleCallback = () => {
 
   if (hash.access_token) {
     accessToken.value = hash.access_token
-    console.log("Spotify token:", accessToken.value)
-
-    // 清掉 URL hash
-    window.location.hash = ""
-
-    // 初始化 Spotify 播放器
+    window.location.hash = "" // 清掉 URL hash
     initPlayer()
   }
 }
 
 /** Step 3: 初始化 Spotify Web Playback SDK */
 const initPlayer = () => {
-  if (!accessToken.value) return
-  if (!window.Spotify) {
-    console.error("Spotify SDK 尚未載入")
-    return
-  }
+  if (!accessToken.value || !window.Spotify) return
 
   player.value = new Spotify.Player({
     name: "Vue Spotify Player",
