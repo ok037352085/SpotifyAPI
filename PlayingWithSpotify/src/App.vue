@@ -26,7 +26,7 @@ const loginWithSpotify = () => {
   window.location.href = url
 }
 
-/** Step 2: Spotify redirect 回來 -> 解析 token */
+/** Step 2: 解析 hash token */
 const handleCallback = () => {
   const hash = window.location.hash.substring(1).split("&").reduce((acc, item) => {
     const [key, value] = item.split("=")
@@ -41,7 +41,7 @@ const handleCallback = () => {
     // 清掉 URL hash
     window.location.hash = ""
 
-    // 初始化 Spotify Player
+    // 初始化 Spotify 播放器
     initPlayer()
   }
 }
