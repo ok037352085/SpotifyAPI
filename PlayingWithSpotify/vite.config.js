@@ -6,11 +6,11 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/SpotifyAPI/",
   plugins: [
     vue(),
     vueDevTools(),
   ],
-  base: "/SpotifyAPI/",
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

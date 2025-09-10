@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted } from "vue"
-import { generateCodeVerifier, generateCodeChallenge } from "./utils/pcke.js"
 
 const clientId = "f53ab351c2f84d3fb31dd98a408ce5e2"
 const redirectUri = "https://ok037352085.github.io/SpotifyAPI/"
@@ -20,45 +19,36 @@ const player = ref(null)
 const deviceId = ref(null)
 
 /** Step 1: Spotify 登入 */
-const loginWithSpotify = async () => {
-  const verifier = generateCodeVerifier()
-  const challenge = await generateCodeChallenge(verifier)
-
-  localStorage.setItem("code_verifier", verifier)
-
-const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(
-  redirectUri
-)}&scope=${encodeURIComponent(scopes)}`;
-
+const loginWithSpotify = () => {
+  const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(
+    redirectUri
+  )}&scope=${encodeURIComponent(scopes)}`
   window.location.href = url
 }
 
 /** Step 2: Spotify redirect 回來 -> 解析 token */
 const handleCallback = () => {
-  // 解析 URL hash 取得 access_token
   const hash = window.location.hash.substring(1).split("&").reduce((acc, item) => {
-    const [key, value] = item.split("=");
-    acc[key] = value;
-    return acc;
-  }, {});
+    const [key, value] = item.split("=")
+    acc[key] = value
+    return acc
+  }, {})
 
   if (hash.access_token) {
-    accessToken.value = hash.access_token;
-    console.log("Spotify token:", accessToken.value);
+    accessToken.value = hash.access_token
+    console.log("Spotify token:", accessToken.value)
 
     // 清掉 URL hash
-    window.location.hash = "";
+    window.location.hash = ""
 
-    // 初始化 Spotify Web Playback SDK
-    initPlayer();
+    // 初始化 Spotify Player
+    initPlayer()
   }
-};
-
+}
 
 /** Step 3: 初始化 Spotify Web Playback SDK */
 const initPlayer = () => {
   if (!accessToken.value) return
-
   if (!window.Spotify) {
     console.error("Spotify SDK 尚未載入")
     return
@@ -99,7 +89,6 @@ const searchTracks = async () => {
 /** Step 5: 播放歌曲 */
 const playTrack = async uri => {
   if (!accessToken.value || !deviceId.value) return alert("播放器尚未就緒")
-
   await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId.value}`, {
     method: "PUT",
     headers: {
@@ -163,23 +152,20 @@ onMounted(() => {
   border-radius: 20px;
   border: none;
 }
-.search-btn{
+.search-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 20px;
   cursor: pointer;
 }
-
-.play-btn{
+.play-btn {
   border-radius: 20px;
   padding: 5px 10px;
 }
-
 button {
   background: #fff;
   transition: 0.5s;
 }
-
 button:hover {
   background: #999;
 }
