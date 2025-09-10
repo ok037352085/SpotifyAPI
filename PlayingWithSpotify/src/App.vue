@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue"
 import { generateCodeVerifier, generateCodeChallenge } from "./utils/pcke.js"
 
 const clientId = "f53ab351c2f84d3fb31dd98a408ce5e2"
-const redirectUri = "https://1fbcb1457259.ngrok-free.app/callback"
+const redirectUri = "https://ok037352085.github.io/SpotifyAPI/callback"
 const scopes = [
   "streaming",
   "user-read-email",
