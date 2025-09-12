@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { generateCodeVerifier, generateCodeChallenge } from "./utils/pkce.js";
 
 const clientId = "f53ab351c2f84d3fb31dd98a408ce5e2";
-const redirectUri = "https://ok037352085.github.io/SpotifyAPI/callback";
+const redirectUri = "https://ok037352085.github.io/SpotifyAPI/";
 const scopes = [
   "streaming",
   "user-read-email",
@@ -13,86 +13,86 @@ const scopes = [
   "user-read-currently-playing"
 ].join(" ");
 
-const accessToken = ref(null);
-const query = ref("");
-const results = ref([]);
-const player = ref(null);
-const deviceId = ref(null);
+const accessToken = ref(null)
+const query = ref("")
+const results = ref([])
+const player = ref(null)
+const deviceId = ref(null)
 
 /** Step 1: 登入 Spotify (PKCE Flow) */
 const loginWithSpotify = async () => {
-  const verifier = generateCodeVerifier();
-  const challenge = await generateCodeChallenge(verifier);
-  localStorage.setItem("pkce_verifier", verifier);
+  const verifier = generateCodeVerifier()
+  const challenge = await generateCodeChallenge(verifier)
+  localStorage.setItem("pkce_verifier", verifier)
 
-  const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&code_challenge_method=S256&code_challenge=${challenge}`;
-  window.location.href = url;
-};
+  const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&code_challenge_method=S256&code_challenge=${challenge}`
+  window.location.href = url
+}
 
 /** Step 2: 解析回傳 code 並交換 token */
 const handleCallback = async () => {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get("code");
-  if (!code) return;
+  const params = new URLSearchParams(window.location.search)
+  const code = params.get("code")
+  if (code) handleCallback(code)
 
-  const verifier = localStorage.getItem("pkce_verifier");
+  const verifier = localStorage.getItem("pkce_verifier")
   const body = new URLSearchParams({
     client_id: clientId,
     grant_type: "authorization_code",
     code,
     redirect_uri: redirectUri,
     code_verifier: verifier
-  });
+  })
 
   const res = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body
-  });
-  const data = await res.json();
-  accessToken.value = data.access_token;
-  localStorage.setItem("spotify_token", data.access_token);
+  })
+  const data = await res.json()
+  accessToken.value = data.access_token
+  localStorage.setItem("spotify_token", data.access_token)
 
-  window.history.replaceState({}, null, "/SpotifyAPI/"); // 清掉 ?code
-  initPlayer();
-};
+  window.history.replaceState({}, null, "/SpotifyAPI/") // 清掉 ?code
+  initPlayer()
+}
 
 /** Step 3: 初始化 Spotify Web Playback SDK */
 const initPlayer = () => {
-  if (!accessToken.value || !window.Spotify) return;
+  if (!accessToken.value || !window.Spotify) return
 
   player.value = new Spotify.Player({
     name: "Vue Spotify Player",
     getOAuthToken: cb => cb(accessToken.value),
     volume: 0.5
-  });
+  })
 
   player.value.addListener("ready", ({ device_id }) => {
     deviceId.value = device_id;
-    console.log("Spotify Player Ready, Device ID:", device_id);
-  });
+    console.log("Spotify Player Ready, Device ID:", device_id)
+  })
 
-  player.value.addListener("initialization_error", ({ message }) => console.error(message));
-  player.value.addListener("authentication_error", ({ message }) => console.error(message));
-  player.value.addListener("account_error", ({ message }) => console.error(message));
-  player.value.addListener("playback_error", ({ message }) => console.error(message));
+  player.value.addListener("initialization_error", ({ message }) => console.error(message))
+  player.value.addListener("authentication_error", ({ message }) => console.error(message))
+  player.value.addListener("account_error", ({ message }) => console.error(message))
+  player.value.addListener("playback_error", ({ message }) => console.error(message))
 
-  player.value.connect();
+  player.value.connect()
 };
 
 /** Step 4: 搜尋歌曲 */
 const searchTracks = async () => {
-  if (!accessToken.value) return alert("請先登入 Spotify");
+  if (!accessToken.value) return alert("請先登入 Spotify")
   const res = await fetch(`https://api.spotify.com/v1/search?q=${query.value}&type=track&limit=5`, {
     headers: { Authorization: `Bearer ${accessToken.value}` }
-  });
-  const data = await res.json();
-  results.value = data.tracks.items;
-};
+  })
+  const data = await res.json()
+  results.value = data.tracks.items
+}
 
 /** Step 5: 播放歌曲 */
 const playTrack = async uri => {
-  if (!accessToken.value || !deviceId.value) return alert("播放器尚未就緒");
+  if (!accessToken.value || !deviceId.value) return alert("播放器尚未就緒")
   await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId.value}`, {
     method: "PUT",
     headers: {
@@ -100,20 +100,20 @@ const playTrack = async uri => {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ uris: [uri] })
-  });
-};
+  })
+}
 
 onMounted(() => {
   if (window.location.pathname.endsWith("/callback")) {
-    handleCallback();
+    handleCallback()
   } else {
     const token = localStorage.getItem("spotify_token");
     if (token) {
       accessToken.value = token;
-      initPlayer();
+      initPlayer()
     }
   }
-});
+})
 </script>
 
 <template>
