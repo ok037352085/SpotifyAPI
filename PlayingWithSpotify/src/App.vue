@@ -2,8 +2,8 @@
 import { ref, onMounted } from "vue";
 import { generateCodeVerifier, generateCodeChallenge } from "./utils/pkce.js";
 
-const clientId = "f53ab351c2f84d3fb31dd98a408ce5e2";
-const redirectUri = "https://ok037352085.github.io/SpotifyAPI/";
+const clientId = "f53ab351c2f84d3fb31dd98a408ce5e2"
+const redirectUri = "https://ok037352085.github.io/SpotifyAPI/"
 const scopes = [
   "streaming",
   "user-read-email",
@@ -11,7 +11,7 @@ const scopes = [
   "user-read-playback-state",
   "user-modify-playback-state",
   "user-read-currently-playing"
-].join(" ");
+].join(" ")
 
 const accessToken = ref(null)
 const query = ref("")
@@ -33,7 +33,7 @@ const loginWithSpotify = async () => {
 const handleCallback = async () => {
   const params = new URLSearchParams(window.location.search)
   const code = params.get("code")
-  if (code) handleCallback(code)
+  if (!code) return
 
   const verifier = localStorage.getItem("pkce_verifier")
   const body = new URLSearchParams({
