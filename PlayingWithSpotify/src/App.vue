@@ -2,7 +2,10 @@
 import { ref, onMounted } from "vue"
 
 const clientId = "f53ab351c2f84d3fb31dd98a408ce5e2"
-const redirectUri = "https://ok037352085.github.io/SpotifyAPI/"
+const redirectUri = 
+  import.meta.env.MODE === "development"
+  ? "http://127.0.0.1:5173/"
+  : "https://ok037352085.github.io/SpotifyAPI/"
 const scopes = [
   "streaming",
   "user-read-email",
@@ -18,14 +21,18 @@ const results = ref([])
 const player = ref(null)
 const deviceId = ref(null)
 
+window.onSpotifyWebPlaybackSDKReady = () => {
+  console.log("Spotify Web Playback SDK 已載入");
+  //不用初始化，交給vue去做
+};
+
 /** Step 1: 登入 Spotify */
 const loginWithSpotify = () => {
-  const url = `https://accounts.spotify.com/authorize?client_id=${clientId}` +
-              `&response_type=token` +
-              `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-              `&scope=${encodeURIComponent(scopes)}`
+  const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`
+  console.log("Redirect URL:", url) // 建議先檢查
   window.location.href = url
 }
+
 
 /** Step 2: 解析回傳 token */
 const handleCallback = () => {
@@ -36,9 +43,12 @@ const handleCallback = () => {
   }, {})
 
   if (hash.access_token) {
-    accessToken.value = hash.access_token
-    window.location.hash = "" // 清掉 URL hash
-    initPlayer()
+    localStorage.setItem("spotify_token", hash.access_token)
+
+    const home = import.meta.env.MODE === "development"
+    ? "/"
+    : "/SpotifyAPI/"
+    window.location.replace(home) // 回首頁
   }
 }
 
@@ -70,9 +80,7 @@ const searchTracks = async () => {
   if (!accessToken.value) return alert("請先登入 Spotify")
   const res = await fetch(
     `https://api.spotify.com/v1/search?q=${query.value}&type=track&limit=5`,
-    {
-      headers: { Authorization: `Bearer ${accessToken.value}` }
-    }
+    { headers: { Authorization: `Bearer ${accessToken.value}` } }
   )
   const data = await res.json()
   results.value = data.tracks.items
@@ -92,7 +100,34 @@ const playTrack = async uri => {
 }
 
 onMounted(() => {
-  handleCallback()
+  // if (window.location.pathname.endsWith("/callback")) {
+  //   handleCallback() // 在 callback 頁面處理 token
+  // } else {
+  //   const token = localStorage.getItem("spotify_token")
+  //   if (token) {
+  //     accessToken.value = token
+  //     initPlayer()
+  //   }
+  // }
+
+  const hash = window.location.hash.substring(1).split("&").reduce((acc, item) => {
+  const [key, value] = item.split("=")
+  acc[key] = value
+  return acc
+  }, {})
+
+  if (hash.access_token) {
+    accessToken.value = hash.access_token
+    localStorage.setItem("spotify_token", hash.access_token)
+    window.location.hash = ""
+    handleCallback()
+  } else {
+    const token = localStorage.getItem("spotify_token")
+    if (token) {
+      accessToken.value = token
+      initPlayer()
+    }
+  }
 })
 </script>
 
