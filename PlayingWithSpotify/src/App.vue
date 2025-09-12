@@ -19,6 +19,7 @@ const results = ref([])
 const player = ref(null)
 const deviceId = ref(null)
 
+
 /** Step 1: 登入 Spotify (PKCE Flow) */
 const loginWithSpotify = async () => {
   const verifier = generateCodeVerifier()
@@ -120,19 +121,21 @@ onMounted(() => {
   <div class="container">
     <h1>PlayingWithTheAPI</h1>
     <div v-if="!accessToken">
-      <button @click="loginWithSpotify">使用 Spotify 登入</button>
+      <button class="login-btn" @click="loginWithSpotify">使用 Spotify 登入</button>
     </div>
     <div v-else>
       <div class="search">
         <input v-model="query" placeholder="搜尋歌曲..." />
-        <button @click="searchTracks">搜尋</button>
+        <button class="search-btn" @click="searchTracks">搜尋</button>
       </div>
-      <ul>
-        <li v-for="track in results" :key="track.id">
-          {{ track.name }} - {{ track.artists[0].name }}
-          <button @click="playTrack(track.uri)">播放</button>
-        </li>
-      </ul>
+      <div style="position: relative;">
+        <ul>
+          <li v-for="track in results" :key="track.id">
+            {{ track.name }} - {{ track.artists[0].name }}
+              <button class="play-btn" @click="playTrack(track.uri)">播放</button>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -152,31 +155,46 @@ onMounted(() => {
   align-items: center;
   gap: 3rem;
 }
+
 .search {
   display: flex;
+  justify-content: space-between;
   gap: 10px;
   margin-bottom: 20px;
 }
+
 .search input {
   padding: 10px;
   border-radius: 20px;
   border: none;
 }
+
 .search-btn {
-  padding: 10px 20px;
+  padding: 10px;
   border: none;
   border-radius: 20px;
   cursor: pointer;
 }
+
+button:hover {
+  transform: scale(1.05);
+  background: #fff;
+}
+
+ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: self-start;
+}
+
+li {
+  padding:5px 0px;
+}
+
+
 .play-btn {
   border-radius: 20px;
-  padding: 5px 10px;
-}
-button {
-  background: #fff;
-  transition: 0.5s;
-}
-button:hover {
-  background: #999;
+  padding: 10px;
 }
 </style>

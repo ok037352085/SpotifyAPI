@@ -6,3 +6,12 @@
 body {
     background: #999;
 }
+
+button {
+    border: none;
+    border-radius: 20px;
+    padding: 10px;
+    background-color: #e9e6e6;
+    transition: 0.2s ease;
+    font-weight: 600;
+}
