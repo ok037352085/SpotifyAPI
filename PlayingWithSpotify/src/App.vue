@@ -104,7 +104,7 @@ const playTrack = async uri => {
 }
 
 onMounted(() => {
-  if (window.location.pathname.endsWith("/callback")) {
+  if (window.location.pathname.endsWith("/")) {
     handleCallback()
   } else {
     const token = localStorage.getItem("spotify_token");
