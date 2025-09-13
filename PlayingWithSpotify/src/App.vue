@@ -128,11 +128,12 @@ onMounted(() => {
         <input v-model="query" placeholder="搜尋歌曲..." />
         <button class="search-btn" @click="searchTracks">搜尋</button>
       </div>
-      <div style="position: relative;">
+      <div class="song-list">
         <ul>
-          <li v-for="track in results" :key="track.id">
-            {{ track.name }} - {{ track.artists[0].name }}
-              <button class="play-btn" @click="playTrack(track.uri)">播放</button>
+          <li v-for="track in results" :key="track.id" @click="playTrack(track.uri)">
+            <div>
+              {{ track.name }} - {{ track.artists[0].name }}
+            </div>
           </li>
         </ul>
       </div>
@@ -149,7 +150,7 @@ onMounted(() => {
   margin: 100px auto;
   border: 4px solid #000;
   border-radius: 40px;
-  padding: 40px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -181,20 +182,17 @@ button:hover {
   background: #fff;
 }
 
-ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  align-items: self-start;
-}
-
 li {
-  padding:5px 0px;
+  font-size: 18px;
+  list-style: none;
+  padding: 15px 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-
-.play-btn {
-  border-radius: 20px;
-  padding: 10px;
+li:hover {
+  background: #222;
 }
+
 </style>
